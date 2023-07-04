@@ -1,0 +1,155 @@
+datasource db {
+  url      = env("DATABASE_URL")
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ROLE {
+  USER
+  ADMIN
+  EDITOR  
+}
+
+enum COUNTRY {
+  POLAND
+  UKRAINE
+  GERMANY //...
+}
+
+enum DIAL_CODE {
+  lol
+}
+
+enum PAYMENT_METHOD {
+  lol
+}  
+
+enum DELIVERY_METHOD {
+  lol
+}
+
+enum CURRENCIES {
+  lol
+}
+
+model ADDRESS {
+  id String @id @default(cuid())
+  street String
+  city String
+  country COUNTRY
+  zipCode String @map("zip-code")
+  apartmentNumber String @map("apartment-number")
+  houseNumber String @map("house-number")
+  users USER[]
+
+  @@map("addresses")
+}
+
+model USER {
+  id String @id @default(cuid()) 
+  name String 
+  role ROLE @default(USER)
+  address ADDRESS 
+  dateOfBirth DateTime @map("date_of_birth")
+  orders ORDER[]
+  reviews REVIEW[]
+  avatar IMAGE
+  email String @unique
+  phoneNumber String @map("phone_number")
+  dialCode DIAL_CODE
+
+  @@map("users")
+}
+
+model ORDER {
+  id String @id @default(cuid())
+  dateOfOrder DateTime @map("date_of_order")
+  products ORDERS_PRODUCTS[]
+  paymentMethod PAYMENT_METHOD @map("payment-method")
+  deliveryMethod DELIVERY_METHOD @map("delivery-method")
+  address ADDRESS
+  userId String @map("user_id")
+
+  user USER @relation(fields:[userId],references:[id])
+  @@map("orders")
+}
+
+model PRODUCT {
+  id String @id @default(cuid())
+  name String
+  description String
+  teaser String
+  seoDescription String @map("seo_description")
+  images IMAGE[]
+  price PRICE
+  reviews REVIEW[]
+  orders ORDERS_PRODUCTS[]
+  productGroup PRODUCT_GROUP
+  itemsLeft Int
+  itemsSold Int
+  lowestPrice PRICE 
+  mainImage IMAGE
+
+  prices PRICE @relation(fields: [priceId], references: [id])
+
+  @@map("products")
+}
+
+model REVIEW {
+  id String @id @default(cuid())
+  score Float
+  comment String
+  user USER
+  commentDate DateTime @default(now()) @map("comment_date")
+  product PRODUCT
+
+  @@map("reviews")
+}
+
+model IMAGE {
+  id String @id @default(cuid())
+  source String
+  alt String
+  productMainImageId String @map("product_main_image_ids")
+  productImageId String @map("product_image_id")
+
+
+
+
+  @@map("images")
+}
+
+model PRICE {
+  id String @id @default(cuid())
+  currency CURRENCIES
+  products PRODUCT[]
+
+  @@map("prices")
+}
+
+model PRODUCT_GROUP {
+  id String @id @default(cuid())
+  name String
+  description String
+  seoDescription String
+  mainImage IMAGE
+  products PRODUCT[]
+
+
+  @@map("product_group")
+}
+
+model ORDERS_PRODUCTS {
+  orderId String
+  productId String
+
+  order ORDER @relation(fields: [orderId], references: [id])
+  product PRODUCT @relation(fields: [productId], references: [id])
+
+  @@id([orderId, productId])
+  @@map("orders_products")
+}
+
